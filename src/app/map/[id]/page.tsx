@@ -322,8 +322,8 @@ export default function MapPage() {
       }
 
       // insert all current edges
+      // we dont send the id because supabase auto generates a uuid for it
       const edgeRows = edges.map((e) => ({
-        id: e.id,
         rabbit_hole_id: mapId,
         source_node_id: e.source,
         target_node_id: e.target,
