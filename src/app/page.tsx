@@ -5,8 +5,8 @@
 // each card has a color, a heart icon, and a title with an arrow to open it
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 
 // the shape of a rabbit hole from the database
 interface RabbitHole {
@@ -26,6 +26,16 @@ const colorMap: Record<string, string> = {
 export default function Home() {
   const [featuredMaps, setFeaturedMaps] = useState<RabbitHole[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  // if not logged in, send them to login when they click a card
+  const handleCardClick = (mapId: string) => {
+    if (!user) {
+      window.location.href = "/login";
+    } else {
+      window.location.href = `/map/${mapId}`;
+    }
+  };
 
   // fetch the featured rabbit holes from supabase when the page loads
   useEffect(() => {
@@ -62,10 +72,10 @@ export default function Home() {
       {/* 3 column grid of featured map cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
         {featuredMaps.map((map) => (
-          <Link
+          <div
             key={map.id}
-            href={`/map/${map.id}`}
-            className="block rounded-xl border border-gray-300 overflow-hidden hover:shadow-lg transition-shadow"
+            onClick={() => handleCardClick(map.id)}
+            className="block rounded-xl border border-gray-300 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
           >
             {/* colored top section with heart icon */}
             <div
@@ -107,7 +117,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
