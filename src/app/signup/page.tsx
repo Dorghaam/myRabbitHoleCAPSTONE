@@ -12,10 +12,52 @@ export default function SignupPage() {
   // state for the form fields and any error/success messages
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // checks the form inputs before we even call supabase
+  const validate = () => {
+    if (!email.trim()) {
+      return "please enter your email";
+    }
+    // simple check that the email has an @ and a dot
+    if (!email.includes("@") || !email.includes(".")) {
+      return "please enter a valid email address";
+    }
+    if (!password) {
+      return "please enter a password";
+    }
+    if (password.length < 6) {
+      return "password must be at least 6 characters";
+    }
+    if (password !== confirmPassword) {
+      return "passwords do not match";
+    }
+    return "";
+  };
+
+  // turns supabase error messages into friendlier ones
+  const getFriendlyError = (message: string) => {
+    if (message.includes("User already registered")) {
+      return "an account with this email already exists, try logging in instead";
+    }
+    if (message.includes("Password should be at least")) {
+      return "password must be at least 6 characters";
+    }
+    if (message.includes("Unable to validate email")) {
+      return "please enter a valid email address";
+    }
+    if (message.includes("Too many requests")) {
+      return "too many signup attempts, please wait a moment and try again";
+    }
+    if (message.includes("Signups not allowed")) {
+      return "signups are currently disabled, please contact the admin";
+    }
+    return message;
+  };
 
   // this runs when the user clicks the signup button
   const handleSignup = async (e: React.FormEvent) => {
@@ -23,22 +65,29 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // check for input errors first
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
 
     // call supabase to create a new account
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
     });
 
     if (error) {
-      setError(error.message);
+      setError(getFriendlyError(error.message));
       setLoading(false);
     } else {
-      // account created, let user know to check email or redirect them
-      setSuccess("Account created! You can now log in.");
+      // account created, let user know then redirect to login
+      setSuccess("account created! redirecting to login...");
       setLoading(false);
-      // after a short delay, send them to the login page
       setTimeout(() => {
         router.push("/login");
       }, 2000);
@@ -61,8 +110,8 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-pink-400"
-              required
             />
           </div>
 
@@ -73,20 +122,35 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="at least 6 characters"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-pink-400"
-              minLength={6}
-              required
             />
           </div>
 
-          {/* show error if signup fails */}
+          {/* confirm password field */}
+          <div>
+            <label className="block font-bold mb-2">Confirm Password:</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="type your password again"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-pink-400"
+            />
+          </div>
+
+          {/* show error if something went wrong */}
           {error && (
-            <p className="text-red-500 text-sm">{error}</p>
+            <p className="text-red-500 text-sm bg-red-50 px-4 py-2 rounded-lg">
+              {error}
+            </p>
           )}
 
           {/* show success message */}
           {success && (
-            <p className="text-green-500 text-sm">{success}</p>
+            <p className="text-green-600 text-sm bg-green-50 px-4 py-2 rounded-lg">
+              {success}
+            </p>
           )}
 
           {/* link to login page */}
