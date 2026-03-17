@@ -5,14 +5,13 @@
 // when logged in it shows the users name instead of the login link
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
 export default function Navbar() {
   // usePathname lets us know which page we are on so we can bold the active link
   const pathname = usePathname();
-  const router = useRouter();
   const { user, loading } = useAuth();
 
   // get a display name from the user object
@@ -25,7 +24,7 @@ export default function Navbar() {
   // sign the user out and send them to the home page
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/");
+    window.location.href = "/";
   };
 
   return (

@@ -4,7 +4,6 @@
 // matches the wireframe with a centered card, email/password fields, and a link to signup
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -14,7 +13,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   // checks the form inputs before we even call supabase
   const validate = () => {
@@ -76,8 +74,9 @@ export default function LoginPage() {
       setError(getFriendlyError(error.message));
       setLoading(false);
     } else {
-      // login worked, send them to the home page
-      router.push("/");
+      // login worked, do a full page reload to the home page
+      // this makes sure the auth provider picks up the new session
+      window.location.href = "/";
     }
   };
 

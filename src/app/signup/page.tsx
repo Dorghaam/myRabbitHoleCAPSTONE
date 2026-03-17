@@ -4,7 +4,6 @@
 // matches the wireframe with a centered card, email/password fields, and a signup button
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -16,7 +15,6 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   // checks the form inputs before we even call supabase
   const validate = () => {
@@ -88,8 +86,9 @@ export default function SignupPage() {
       // account created, let user know then redirect to login
       setSuccess("account created! redirecting to login...");
       setLoading(false);
+      // full page reload so the auth provider picks up the session
       setTimeout(() => {
-        router.push("/login");
+        window.location.href = "/login";
       }, 2000);
     }
   };
