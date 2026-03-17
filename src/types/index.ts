@@ -1,5 +1,5 @@
 // all the typescript types used across the app
-// ported from the original myRabbitHole app
+// shared across all components in the app
 
 export enum NodeType {
   TOPIC = "topic",

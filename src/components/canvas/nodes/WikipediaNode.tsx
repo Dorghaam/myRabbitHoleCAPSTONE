@@ -1,7 +1,7 @@
 "use client";
 
 // a wikipedia node that shows an article extract with a link to the full page
-// ported from the original myRabbitHole app
+// includes a read more button that opens the full wikipedia page
 
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";

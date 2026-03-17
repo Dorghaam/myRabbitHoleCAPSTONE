@@ -1,7 +1,7 @@
 "use client";
 
 // the root topic node that shows the main topic name
-// ported from the original myRabbitHole app
+// displays as a small card with the topic name
 
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";

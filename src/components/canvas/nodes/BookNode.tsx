@@ -1,7 +1,7 @@
 "use client";
 
 // a book node that shows a book cover, title, author, and description
-// ported from the original myRabbitHole app
+// shows cover image, title, author, and description
 
 import { memo, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";

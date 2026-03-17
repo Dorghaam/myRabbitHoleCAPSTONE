@@ -1,5 +1,5 @@
 // utility functions for parsing ai responses
-// ported from the original myRabbitHole app
+// used for cleaning up ai generated text
 
 export interface TermItem {
   name: string;

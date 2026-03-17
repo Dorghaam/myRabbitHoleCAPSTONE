@@ -2,7 +2,7 @@
 
 // the right side toolbar with all the prompt buttons
 // shows when a node is selected on the canvas
-// ported from the original myRabbitHole app
+// shows when a node is selected on the canvas
 
 import { useState, useRef, useEffect } from "react";
 import {

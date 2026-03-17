@@ -2,7 +2,7 @@
 
 // the main graph canvas that renders all the nodes and edges
 // uses reactflow to handle panning, zooming, and dragging
-// ported from the original myRabbitHole app
+// handles panning, zooming, dragging, and node selection
 
 import { useCallback, useMemo } from "react";
 import {

@@ -1,5 +1,5 @@
 // utility functions for creating nodes, edges, and calculating positions
-// ported from the original myRabbitHole app
+// used throughout the app for graph operations
 
 import { v4 as uuidv4 } from "uuid";
 import type { Node, Edge } from "@xyflow/react";

@@ -1,7 +1,7 @@
 "use client";
 
 // a content node that shows a title and a block of text
-// ported from the original myRabbitHole app
+// shows a title and a block of text with expand/collapse
 
 import { memo, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";

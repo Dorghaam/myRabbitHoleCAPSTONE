@@ -1,6 +1,6 @@
 // all the prompt configs for each button in the sidebar
 // each one tells gemini what kind of response to generate
-// ported from the original myRabbitHole app
+// each one tells gemini what kind of response to generate
 
 import { PromptType, PromptConfig } from "@/types";
 

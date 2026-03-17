@@ -1,5 +1,5 @@
 // color config for each node color option
-// ported from the original myRabbitHole app
+// maps each NodeColor enum value to actual hex colors
 
 import { NodeColor } from "@/types";
 

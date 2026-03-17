@@ -2,7 +2,7 @@
 
 // create new rabbit hole page
 // user types a topic and clicks explore to start a new concept map
-// ported from the original myRabbitHole TopicInput component
+// user types a topic and clicks explore to start a new concept map
 
 import { useState } from "react";
 import { Search, Sparkles } from "lucide-react";

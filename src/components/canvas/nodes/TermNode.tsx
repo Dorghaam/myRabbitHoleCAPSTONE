@@ -1,7 +1,7 @@
 "use client";
 
 // a small term node that shows a keyword with a category badge
-// ported from the original myRabbitHole app
+// displays a keyword with a colored category badge
 
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
