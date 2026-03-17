@@ -113,3 +113,14 @@ export interface ConceptEdgeData {
   sourceHandle: string;
   targetHandle: string;
 }
+
+// config shape for each prompt button in the sidebar
+export interface PromptConfig {
+  type: PromptType;
+  label: string;
+  description: string;
+  generatesTerms: boolean;
+  generatesContentFromTerms?: boolean;
+  generatesBookNodes?: boolean;
+  systemPrompt: string;
+}
