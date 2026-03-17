@@ -16,10 +16,11 @@ import {
   type OnEdgesChange,
 } from "@xyflow/react";
 import { Canvas } from "@/components/canvas/Canvas";
+import { PromptSidebar } from "@/components/sidebar/PromptSidebar";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
-import { ConceptNodeData, ConceptEdgeData, NodeType, NodeColor } from "@/types";
-import { createTopicNode } from "@/utils/nodeUtils";
+import { ConceptNodeData, ConceptEdgeData, NodeType, NodeColor, PromptType } from "@/types";
+import { createTopicNode, getNodeLabel } from "@/utils/nodeUtils";
 
 export default function MapPage() {
   const params = useParams();
@@ -169,6 +170,19 @@ export default function MapPage() {
     setSelectedNodeId(nodeId);
   }, []);
 
+  // get the label of the currently selected node (for the sidebar header)
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+  const selectedNodeLabel = selectedNode ? getNodeLabel(selectedNode) : "";
+
+  // placeholder handler for when prompt buttons are clicked
+  // this will be wired up to ai generation in a future commit
+  const handlePromptClick = useCallback(
+    (type: PromptType, customPrompt?: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      console.log("prompt clicked:", type, customPrompt);
+    },
+    []
+  );
+
   // show loading while we fetch
   if (authLoading || loading) {
     return (
@@ -180,7 +194,7 @@ export default function MapPage() {
 
   return (
     <ReactFlowProvider>
-      <div className="h-[calc(100vh-73px)] w-full bg-canvas-bg">
+      <div className="h-[calc(100vh-73px)] w-full bg-canvas-bg relative">
         <Canvas
           nodes={nodes}
           edges={edges}
@@ -189,6 +203,17 @@ export default function MapPage() {
           selectedNodeId={selectedNodeId}
           onSelectNode={handleSelectNode}
         />
+
+        {/* sidebar shows on the right when a node is selected */}
+        {selectedNodeId && selectedNode && (
+          <div className="absolute top-0 right-0 h-full z-10">
+            <PromptSidebar
+              selectedNodeLabel={selectedNodeLabel}
+              onClose={() => handleSelectNode(null)}
+              onPromptClick={handlePromptClick}
+            />
+          </div>
+        )}
       </div>
     </ReactFlowProvider>
   );
