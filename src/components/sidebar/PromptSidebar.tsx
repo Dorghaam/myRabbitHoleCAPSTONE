@@ -13,6 +13,7 @@ import {
   Redo,
   ChevronDown,
   Globe,
+  Trash2,
 } from "lucide-react";
 import { PromptType } from "@/types";
 
@@ -53,14 +54,18 @@ const PROMPT_BUTTONS = [
 // props the sidebar needs from its parent
 interface PromptSidebarProps {
   selectedNodeLabel: string;
+  isTopicNode?: boolean;
   onClose: () => void;
   onPromptClick: (type: PromptType, customPrompt?: string) => void;
+  onDeleteNode?: () => void;
 }
 
 export function PromptSidebar({
   selectedNodeLabel,
+  isTopicNode = false,
   onClose,
   onPromptClick,
+  onDeleteNode,
 }: PromptSidebarProps) {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
@@ -238,6 +243,17 @@ export function PromptSidebar({
                 Redo
               </button>
             </div>
+
+            {/* delete node button, cant delete the root topic node */}
+            {!isTopicNode && onDeleteNode && (
+              <button
+                onClick={onDeleteNode}
+                className="w-full px-2.5 py-1.5 text-xs font-medium rounded-full bg-red-50 text-red-600 border-2 border-red-300 shadow-[0_3px_0_0_#dc2626] hover:shadow-[0_2px_0_0_#dc2626] hover:translate-y-[1px] active:shadow-none active:translate-y-[3px] transition-all duration-100 flex items-center justify-center gap-1.5"
+              >
+                <Trash2 size={12} />
+                Delete Node
+              </button>
+            )}
 
             {/* chat button */}
             <button className="w-full px-2.5 py-2 bg-blue-500 text-white rounded-full font-medium border-2 border-blue-600 shadow-[0_3px_0_0_#1e40af] hover:shadow-[0_2px_0_0_#1e40af] hover:translate-y-[1px] active:shadow-none active:translate-y-[3px] transition-all duration-100 flex items-center justify-center gap-2 text-xs">

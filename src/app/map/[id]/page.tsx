@@ -35,6 +35,7 @@ import {
   calculateChildPosition,
   calculateTermNodesPositions,
   getDirectChildren,
+  getAllDescendantIds,
 } from "@/utils/nodeUtils";
 import { getPromptConfig } from "@/config/prompts";
 import { parseTermsFromResponse, stripMarkdown } from "@/utils/parseUtils";
@@ -341,9 +342,32 @@ export default function MapPage() {
     }
   };
 
+  // deletes the selected node and all its children from the graph
+  const handleDeleteNode = useCallback(() => {
+    if (!selectedNodeId) return;
+
+    const node = nodes.find((n) => n.id === selectedNodeId);
+    if (!node) return;
+
+    // cant delete the root topic node
+    if (node.data.type === NodeType.TOPIC) return;
+
+    // find all child nodes that need to be deleted too
+    const descendants = getAllDescendantIds(selectedNodeId, edges);
+    const toDelete = new Set([selectedNodeId]);
+    descendants.forEach((id) => toDelete.add(id));
+
+    setNodes((prev) => prev.filter((n) => !toDelete.has(n.id)));
+    setEdges((prev) =>
+      prev.filter((e) => !toDelete.has(e.source) && !toDelete.has(e.target))
+    );
+    setSelectedNodeId(null);
+  }, [selectedNodeId, nodes, edges]);
+
   // get info about the selected node for the sidebar
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const selectedNodeLabel = selectedNode ? getNodeLabel(selectedNode) : "";
+  const isTopicNode = selectedNode?.data.type === NodeType.TOPIC;
 
   if (authLoading || loading) {
     return (
@@ -389,8 +413,10 @@ export default function MapPage() {
           <div className="absolute top-0 right-0 h-full z-10">
             <PromptSidebar
               selectedNodeLabel={selectedNodeLabel}
+              isTopicNode={isTopicNode}
               onClose={() => handleSelectNode(null)}
               onPromptClick={handlePromptClick}
+              onDeleteNode={handleDeleteNode}
             />
           </div>
         )}
