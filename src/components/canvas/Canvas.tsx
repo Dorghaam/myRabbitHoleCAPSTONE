@@ -54,6 +54,14 @@ export function Canvas({
   selectedNodeId,
   onSelectNode,
 }: CanvasProps) {
+  // clicking a node selects it and opens the sidebar
+  const handleNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node<ConceptNodeData>) => {
+      onSelectNode(node.id);
+    },
+    [onSelectNode]
+  );
+
   // clicking the background deselects any selected node
   const handlePaneClick = useCallback(() => {
     onSelectNode(null);
@@ -78,6 +86,7 @@ export function Canvas({
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
         nodeTypes={nodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
