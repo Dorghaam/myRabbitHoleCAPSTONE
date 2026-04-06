@@ -44,6 +44,7 @@ interface CanvasProps {
   onEdgesChange: OnEdgesChange<Edge<ConceptEdgeData>>;
   selectedNodeId: string | null;
   onSelectNode: (nodeId: string | null) => void;
+  onNodeDoubleClick?: (nodeId: string) => void;
 }
 
 export function Canvas({
@@ -53,6 +54,7 @@ export function Canvas({
   onEdgesChange,
   selectedNodeId,
   onSelectNode,
+  onNodeDoubleClick,
 }: CanvasProps) {
   // clicking a node selects it and opens the sidebar
   const handleNodeClick = useCallback(
@@ -60,6 +62,14 @@ export function Canvas({
       onSelectNode(node.id);
     },
     [onSelectNode]
+  );
+
+  // double clicking a node opens the response modal
+  const handleNodeDoubleClick = useCallback(
+    (_event: React.MouseEvent, node: Node<ConceptNodeData>) => {
+      if (onNodeDoubleClick) onNodeDoubleClick(node.id);
+    },
+    [onNodeDoubleClick]
   );
 
   // clicking the background deselects any selected node
@@ -87,6 +97,7 @@ export function Canvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
+        onNodeDoubleClick={handleNodeDoubleClick}
         onPaneClick={handlePaneClick}
         nodeTypes={nodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}

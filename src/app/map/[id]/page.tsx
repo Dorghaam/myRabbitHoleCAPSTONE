@@ -16,6 +16,7 @@ import {
 } from "@xyflow/react";
 import { Canvas } from "@/components/canvas/Canvas";
 import { PromptSidebar } from "@/components/sidebar/PromptSidebar";
+import { ResponseModal } from "@/components/ResponseModal";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import {
@@ -57,6 +58,12 @@ export default function MapPage() {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
+
+  // state for the response modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalContent, setModalContent] = useState("");
+  const [modalTyping, setModalTyping] = useState(false);
 
   // load the rabbit hole data from supabase
   useEffect(() => {
@@ -193,6 +200,32 @@ export default function MapPage() {
     setSelectedNodeId(nodeId);
   }, []);
 
+  // double clicking a node opens the modal to read its full content
+  const handleNodeDoubleClick = useCallback(
+    (nodeId: string) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (!node) return;
+      const data = node.data;
+      if (data.type === NodeType.CONTENT) {
+        setModalTitle(data.title);
+        setModalContent(data.content);
+        setModalTyping(false);
+        setModalOpen(true);
+      } else if (data.type === NodeType.WIKIPEDIA) {
+        setModalTitle(data.title);
+        setModalContent(data.extract);
+        setModalTyping(false);
+        setModalOpen(true);
+      } else if (data.type === NodeType.TERM && data.definition) {
+        setModalTitle(data.term);
+        setModalContent(data.definition);
+        setModalTyping(false);
+        setModalOpen(true);
+      }
+    },
+    [nodes]
+  );
+
   // calls the gemini api through our server route
   const callGemini = async (
     systemPrompt: string,
@@ -261,6 +294,18 @@ export default function MapPage() {
 
         const response = await callGemini(prompt, nodeText);
         const cleanResponse = stripMarkdown(response);
+
+        // show content responses in the live typing modal
+        if (!config.generatesTerms) {
+          setModalTitle(config.label);
+          setModalContent("");
+          setModalOpen(true);
+          setModalTyping(true);
+
+          // small delay so the modal opens before content appears
+          await new Promise((r) => setTimeout(r, 100));
+          setModalContent(cleanResponse);
+        }
 
         if (config.generatesTerms) {
           // parse the json response into term nodes
@@ -485,6 +530,7 @@ export default function MapPage() {
           onEdgesChange={onEdgesChange}
           selectedNodeId={selectedNodeId}
           onSelectNode={handleSelectNode}
+          onNodeDoubleClick={handleNodeDoubleClick}
         />
 
         {/* sidebar shows on the right when a node is selected */}
@@ -499,6 +545,17 @@ export default function MapPage() {
             />
           </div>
         )}
+        {/* modal for live ai responses and reading node content */}
+        <ResponseModal
+          isOpen={modalOpen}
+          title={modalTitle}
+          content={modalContent}
+          isTyping={modalTyping}
+          onClose={() => {
+            setModalOpen(false);
+            setModalTyping(false);
+          }}
+        />
       </div>
     </ReactFlowProvider>
   );
