@@ -24,6 +24,66 @@ const colorMap: Record<string, string> = {
   orange: "bg-orange-400",
 };
 
+// returns a transparent decorative svg icon for each featured map topic
+function getTopicIcon(title: string) {
+  switch (title) {
+    case "History of Rome":
+      return (
+        <svg width="110" height="110" viewBox="0 0 120 120" fill="white">
+          <polygon points="60,8 15,38 105,38" />
+          <rect x="15" y="38" width="90" height="5" rx="1" />
+          <rect x="25" y="43" width="10" height="52" rx="2" />
+          <rect x="45" y="43" width="10" height="52" rx="2" />
+          <rect x="65" y="43" width="10" height="52" rx="2" />
+          <rect x="85" y="43" width="10" height="52" rx="2" />
+          <rect x="15" y="95" width="90" height="7" rx="1" />
+        </svg>
+      );
+    case "Homeostasis":
+      return (
+        <svg width="110" height="110" viewBox="0 0 120 120" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="5,60 30,60 40,25 50,95 60,35 70,75 80,60 115,60" />
+        </svg>
+      );
+    case "Bipolar Disorder":
+      return (
+        <svg width="110" height="110" viewBox="0 0 120 120" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round">
+          <path d="M10,60 Q35,10 60,60 Q85,110 110,60" />
+          <circle cx="30" cy="35" r="5" fill="white" />
+          <circle cx="90" cy="85" r="5" fill="white" />
+        </svg>
+      );
+    case "Databases":
+      return (
+        <svg width="110" height="110" viewBox="0 0 120 120" fill="none" stroke="white" strokeWidth="4">
+          <ellipse cx="60" cy="30" rx="35" ry="14" />
+          <line x1="25" y1="30" x2="25" y2="90" />
+          <line x1="95" y1="30" x2="95" y2="90" />
+          <ellipse cx="60" cy="90" rx="35" ry="14" />
+          <path d="M25,50 Q60,68 95,50" />
+          <path d="M25,70 Q60,88 95,70" />
+        </svg>
+      );
+    case "Superconductors":
+      return (
+        <svg width="110" height="110" viewBox="0 0 120 120" fill="white">
+          <polygon points="70,5 40,50 58,50 35,115 95,48 70,48 95,5" />
+        </svg>
+      );
+    case "String Theory":
+      return (
+        <svg width="110" height="110" viewBox="0 0 120 120" fill="none" stroke="white" strokeWidth="3">
+          <ellipse cx="60" cy="60" rx="48" ry="18" />
+          <ellipse cx="60" cy="60" rx="48" ry="18" transform="rotate(60 60 60)" />
+          <ellipse cx="60" cy="60" rx="48" ry="18" transform="rotate(-60 60 60)" />
+          <circle cx="60" cy="60" r="7" fill="white" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 // 3d card style that matches the node design from the canvas
 const cardBase = `
   rounded-2xl border-2 border-gray-800 overflow-hidden cursor-pointer bg-white
@@ -135,11 +195,14 @@ export default function Home() {
               onClick={() => handleCardClick(map.id)}
               className={cardBase}
             >
-              {/* colored header area with the map title */}
+              {/* colored header area with the map title and decorative icon */}
               <div
-                className={`${colorMap[map.color] || "bg-purple-400"} h-36 flex items-end p-5`}
+                className={`${colorMap[map.color] || "bg-purple-400"} h-36 flex items-end p-5 relative overflow-hidden`}
               >
-                <h3 className="text-white font-bold text-xl drop-shadow-sm">
+                <div className="absolute right-3 top-2 opacity-[0.15] pointer-events-none">
+                  {getTopicIcon(map.title)}
+                </div>
+                <h3 className="text-white font-bold text-xl drop-shadow-sm relative z-10">
                   {map.title}
                 </h3>
               </div>
