@@ -168,7 +168,11 @@ export default function MapPage() {
     };
 
     loadMap();
-  }, [mapId, user, authLoading]);
+    // we use user?.id instead of user so the effect doesnt rerun on token refresh
+    // without this, switching tabs causes supabase to fire a token refresh event
+    // which creates a new user object and reloads the whole map, wiping unsaved nodes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapId, user?.id, authLoading]);
 
   // reactflow change handlers
   const onNodesChange: OnNodesChange<Node<ConceptNodeData>> = useCallback(
