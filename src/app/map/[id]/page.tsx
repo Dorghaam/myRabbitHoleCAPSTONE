@@ -29,11 +29,14 @@ import {
   createTopicNode,
   createContentNode,
   createTermNode,
+  createWikipediaNode,
+  createBookNode,
   createEdge,
   getNodeLabel,
   getNodeText,
   calculateChildPosition,
   calculateTermNodesPositions,
+  calculateBookNodesPositions,
   getDirectChildren,
   getAllDescendantIds,
 } from "@/utils/nodeUtils";
@@ -53,6 +56,7 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   // load the rabbit hole data from supabase
   useEffect(() => {
@@ -76,6 +80,7 @@ export default function MapPage() {
       }
 
       setMapTitle(rabbitHole.title);
+      setIsFeatured(rabbitHole.is_featured || false);
 
       const { data: dbNodes } = await supabase
         .from("nodes")
@@ -145,14 +150,18 @@ export default function MapPage() {
         const topicNode = createTopicNode(rabbitHole.title, { x: 400, y: 100 });
         setNodes([topicNode]);
 
-        await supabase.from("nodes").insert({
-          id: topicNode.id,
-          rabbit_hole_id: mapId,
-          label: rabbitHole.title,
-          type: "topic",
-          x: 400,
-          y: 100,
-        });
+        // only save the topic node to the database if its not a featured map
+        // featured maps have no owner so the insert would fail
+        if (!rabbitHole.is_featured) {
+          await supabase.from("nodes").insert({
+            id: topicNode.id,
+            rabbit_hole_id: mapId,
+            label: rabbitHole.title,
+            type: "topic",
+            x: 400,
+            y: 100,
+          });
+        }
       }
 
       setLoading(false);
@@ -207,12 +216,56 @@ export default function MapPage() {
       const selectedNode = nodes.find((n) => n.id === selectedNodeId);
       if (!selectedNode) return;
 
-      const config = getPromptConfig(type);
-      if (!config) return;
-
       setGenerating(true);
 
       try {
+        const nodeLabel = getNodeLabel(selectedNode);
+
+        // wikipedia uses the free wikipedia api instead of gemini
+        if (type === PromptType.WIKIPEDIA) {
+          const res = await fetch(`/api/wikipedia?q=${encodeURIComponent(nodeLabel)}`);
+          if (!res.ok) throw new Error("wikipedia search failed");
+          const wikiData = await res.json();
+
+          const existingChildren = getDirectChildren(selectedNodeId, nodes, edges);
+          const position = calculateChildPosition(selectedNode, existingChildren, "content");
+
+          const wikiNode = createWikipediaNode(
+            wikiData.title,
+            wikiData.extract,
+            wikiData.pageUrl,
+            selectedNodeId,
+            position
+          );
+          const wikiEdge = createEdge(selectedNodeId, wikiNode.id);
+          setNodes((prev) => [...prev, wikiNode]);
+          setEdges((prev) => [...prev, wikiEdge]);
+          return;
+        }
+
+        // books uses the free google books api instead of gemini
+        if (type === PromptType.BOOKS) {
+          const res = await fetch(`/api/books?q=${encodeURIComponent(nodeLabel)}`);
+          if (!res.ok) throw new Error("books search failed");
+          const booksData = await res.json();
+          const books = booksData.books || [];
+          if (books.length === 0) return;
+
+          const positions = calculateBookNodesPositions(selectedNode, books.length);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const newNodes = books.map((book: any, i: number) =>
+            createBookNode(book.title, book.author, book.coverUrl, book.description, selectedNodeId, positions[i])
+          );
+          const newEdges = newNodes.map((node: Node<ConceptNodeData>) => createEdge(selectedNodeId, node.id));
+          setNodes((prev) => [...prev, ...newNodes]);
+          setEdges((prev) => [...prev, ...newEdges]);
+          return;
+        }
+
+        // everything else uses gemini ai
+        const config = getPromptConfig(type);
+        if (!config) return;
+
         const nodeText = getNodeText(selectedNode);
         let prompt = config.systemPrompt;
 
@@ -383,13 +436,15 @@ export default function MapPage() {
         {/* save map button at the top */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4">
           <span className="text-lg font-bold">{mapTitle}</span>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-2 text-sm font-bold text-primary-pink hover:text-primary-pink-hover disabled:opacity-50"
-          >
-            {saving ? "Saving..." : "Save Map"}
-          </button>
+          {!isFeatured && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-4 py-2 text-sm font-bold text-primary-pink hover:text-primary-pink-hover disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save Map"}
+            </button>
+          )}
         </div>
 
         {/* generating indicator */}
@@ -409,7 +464,7 @@ export default function MapPage() {
         />
 
         {/* sidebar shows on the right when a node is selected */}
-        {selectedNodeId && selectedNode && (
+        {!isFeatured && selectedNodeId && selectedNode && (
           <div className="absolute top-0 right-0 h-full z-10">
             <PromptSidebar
               selectedNodeLabel={selectedNodeLabel}

@@ -33,6 +33,7 @@ export enum PromptType {
   JOIN = "join",
   FIGURES = "figures",
   BOOKS = "books",
+  WIKIPEDIA = "wikipedia",
   CUSTOM = "custom",
 }
 
