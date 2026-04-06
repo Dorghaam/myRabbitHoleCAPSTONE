@@ -59,6 +59,15 @@ export default function MapPage() {
   const [saving, setSaving] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
 
+  // state for the floating toast notification
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // shows a toast that auto disappears after 2 seconds
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 2000);
+  };
+
   // state for the response modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
@@ -455,10 +464,10 @@ export default function MapPage() {
         await supabase.from("edges").insert(edgeRows);
       }
 
-      alert("map saved!");
+      showToast("map saved!");
     } catch (error) {
       console.error("save error:", error);
-      alert("failed to save map");
+      showToast("failed to save map", "error");
     } finally {
       setSaving(false);
     }
@@ -545,6 +554,19 @@ export default function MapPage() {
             />
           </div>
         )}
+        {/* floating toast notification */}
+        {toast && (
+          <div
+            className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full font-medium text-sm border-2 shadow-[3px_3px_0_0_#1e3a5f] animate-[fadeInUp_0.2s_ease-out] ${
+              toast.type === "success"
+                ? "bg-white text-gray-800 border-gray-800"
+                : "bg-red-50 text-red-700 border-red-400 shadow-[3px_3px_0_0_#dc2626]"
+            }`}
+          >
+            {toast.message}
+          </div>
+        )}
+
         {/* modal for live ai responses and reading node content */}
         <ResponseModal
           isOpen={modalOpen}
