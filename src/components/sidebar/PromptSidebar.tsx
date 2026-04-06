@@ -7,10 +7,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   X,
-  MessageSquare,
   Sparkles,
-  Undo,
-  Redo,
   ChevronDown,
   Globe,
   Trash2,
@@ -228,22 +225,6 @@ export function PromptSidebar({
               Wikipedia
             </button>
 
-            {/* undo / redo row */}
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                className={`${pillButtonStyle} flex items-center justify-center gap-1`}
-              >
-                <Undo size={12} />
-                Undo
-              </button>
-              <button
-                className={`${pillButtonStyle} flex items-center justify-center gap-1`}
-              >
-                <Redo size={12} />
-                Redo
-              </button>
-            </div>
-
             {/* delete node button, cant delete the root topic node */}
             {!isTopicNode && onDeleteNode && (
               <button
@@ -255,11 +236,6 @@ export function PromptSidebar({
               </button>
             )}
 
-            {/* chat button */}
-            <button className="w-full px-2.5 py-2 bg-blue-500 text-white rounded-full font-medium border-2 border-blue-600 shadow-[0_3px_0_0_#1e40af] hover:shadow-[0_2px_0_0_#1e40af] hover:translate-y-[1px] active:shadow-none active:translate-y-[3px] transition-all duration-100 flex items-center justify-center gap-2 text-xs">
-              <MessageSquare size={14} />
-              Chat with Concept Map
-            </button>
           </div>
         )}
       </div>
