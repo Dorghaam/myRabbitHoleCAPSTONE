@@ -243,25 +243,6 @@ export default function MapPage() {
           return;
         }
 
-        // books uses the free google books api instead of gemini
-        if (type === PromptType.BOOKS) {
-          const res = await fetch(`/api/books?q=${encodeURIComponent(nodeLabel)}`);
-          if (!res.ok) throw new Error("books search failed");
-          const booksData = await res.json();
-          const books = booksData.books || [];
-          if (books.length === 0) return;
-
-          const positions = calculateBookNodesPositions(selectedNode, books.length);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const newNodes = books.map((book: any, i: number) =>
-            createBookNode(book.title, book.author, book.coverUrl, book.description, selectedNodeId, positions[i])
-          );
-          const newEdges = newNodes.map((node: Node<ConceptNodeData>) => createEdge(selectedNodeId, node.id));
-          setNodes((prev) => [...prev, ...newNodes]);
-          setEdges((prev) => [...prev, ...newEdges]);
-          return;
-        }
-
         // everything else uses gemini ai
         const config = getPromptConfig(type);
         if (!config) return;
@@ -282,6 +263,45 @@ export default function MapPage() {
           const terms = parseTermsFromResponse(cleanResponse);
           if (terms.length === 0) return;
 
+          // books get special handling to create book nodes with covers from open library
+          if (type === PromptType.BOOKS) {
+            const positions = calculateBookNodesPositions(selectedNode, terms.length);
+
+            // fetch a cover image for each book from open library
+            const coverUrls = await Promise.all(
+              terms.map(async (term) => {
+                try {
+                  const params = new URLSearchParams({ title: term.name, fields: "cover_i", limit: "1" });
+                  if (term.author) params.set("author", term.author);
+                  const res = await fetch(`https://openlibrary.org/search.json?${params}`);
+                  if (!res.ok) return null;
+                  const data = await res.json();
+                  const coverId = data.docs?.[0]?.cover_i;
+                  return coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : null;
+                } catch {
+                  return null;
+                }
+              })
+            );
+
+            const newNodes = terms.map((term, index) =>
+              createBookNode(
+                term.name,
+                term.author || "Unknown Author",
+                coverUrls[index],
+                term.description || "",
+                selectedNodeId,
+                positions[index]
+              )
+            );
+
+            const newEdges = newNodes.map((node) => createEdge(selectedNodeId, node.id));
+            setNodes((prev) => [...prev, ...newNodes]);
+            setEdges((prev) => [...prev, ...newEdges]);
+            return;
+          }
+
+          // everything else creates regular term nodes
           const positions = calculateTermNodesPositions(
             selectedNode,
             terms.length

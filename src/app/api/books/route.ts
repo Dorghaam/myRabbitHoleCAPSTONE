@@ -1,54 +1,49 @@
-// api route that searches google books and returns book info with covers
-// uses the free google books api so no api key is needed
+// api route that fetches a book cover image url from open library
+// uses the free open library api so no api key is needed
 
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const query = req.nextUrl.searchParams.get("q");
-  if (!query) {
+  const title = req.nextUrl.searchParams.get("title");
+  if (!title) {
     return NextResponse.json(
-      { error: "missing search query" },
+      { error: "missing book title" },
       { status: 400 }
     );
   }
 
   try {
-    // search google books for the topic
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=4&printType=books`;
-    const res = await fetch(url);
-    const data = await res.json();
+    // search open library for the book by title and optional author
+    const author = req.nextUrl.searchParams.get("author");
+    const params = new URLSearchParams({
+      title,
+      fields: "cover_i",
+      limit: "1",
+    });
+    if (author) params.set("author", author);
 
-    if (!data.items || data.items.length === 0) {
-      return NextResponse.json({ books: [] });
+    const res = await fetch(
+      `https://openlibrary.org/search.json?${params}`,
+      { headers: { "User-Agent": "myRabbitHole/1.0 (student capstone project)" } }
+    );
+
+    if (!res.ok) {
+      return NextResponse.json({ coverUrl: null });
     }
 
-    // pull out just the fields we need for each book
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const books = data.items.map((item: any) => {
-      const info = item.volumeInfo;
+    const data = await res.json();
+    const coverId = data.docs?.[0]?.cover_i;
 
-      // google books sometimes returns http urls so we swap to https
-      let coverUrl = info.imageLinks?.thumbnail || null;
-      if (coverUrl && coverUrl.startsWith("http://")) {
-        coverUrl = coverUrl.replace("http://", "https://");
-      }
+    if (!coverId) {
+      return NextResponse.json({ coverUrl: null });
+    }
 
-      return {
-        title: info.title || "Unknown Title",
-        author: info.authors ? info.authors.join(", ") : "Unknown Author",
-        coverUrl,
-        description: info.description
-          ? info.description.replace(/<[^>]*>/g, "").slice(0, 200)
-          : "No description available",
-      };
+    // open library serves cover images at this url pattern
+    return NextResponse.json({
+      coverUrl: `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`,
     });
-
-    return NextResponse.json({ books });
   } catch (error) {
-    console.error("google books api error:", error);
-    return NextResponse.json(
-      { error: "failed to search books" },
-      { status: 500 }
-    );
+    console.error("open library api error:", error);
+    return NextResponse.json({ coverUrl: null });
   }
 }
