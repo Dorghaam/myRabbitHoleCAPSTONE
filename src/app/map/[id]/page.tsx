@@ -254,9 +254,18 @@ export default function MapPage() {
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   };
 
+  // difficulty level descriptions that get prepended to every ai prompt
+  const DIFFICULTY_LABELS = [
+    "Explain as if to a 5-year-old child. Use very simple words and analogies.",
+    "Explain at a middle school level. Use simple language suitable for a 12-year-old.",
+    "Explain at a high school level. Use clear language appropriate for a teenager.",
+    "Explain at an undergraduate university level. Use proper terminology.",
+    "Explain at an expert/graduate level. Use advanced terminology and assume deep knowledge.",
+  ];
+
   // handles when a prompt button is clicked in the sidebar
   const handlePromptClick = useCallback(
-    async (type: PromptType, customPrompt?: string) => {
+    async (type: PromptType, customPrompt?: string, difficultyLevel?: number) => {
       if (!selectedNodeId || generating) return;
 
       const selectedNode = nodes.find((n) => n.id === selectedNodeId);
@@ -294,11 +303,12 @@ export default function MapPage() {
         if (!config) return;
 
         const nodeText = getNodeText(selectedNode);
-        let prompt = config.systemPrompt;
+        const difficultyPrefix = `Difficulty level: ${DIFFICULTY_LABELS[difficultyLevel ?? 2]}\n\n`;
+        let prompt = difficultyPrefix + config.systemPrompt;
 
         // if custom prompt, append the users question
         if (type === PromptType.CUSTOM && customPrompt) {
-          prompt = `${config.systemPrompt}\n\nUser's question: ${customPrompt}`;
+          prompt = `${difficultyPrefix}${config.systemPrompt}\n\nUser's question: ${customPrompt}`;
         }
 
         const response = await callGemini(prompt, nodeText);

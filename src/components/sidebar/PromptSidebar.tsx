@@ -53,7 +53,7 @@ interface PromptSidebarProps {
   selectedNodeLabel: string;
   isTopicNode?: boolean;
   onClose: () => void;
-  onPromptClick: (type: PromptType, customPrompt?: string) => void;
+  onPromptClick: (type: PromptType, customPrompt?: string, difficultyLevel?: number) => void;
   onDeleteNode?: () => void;
 }
 
@@ -92,7 +92,7 @@ export function PromptSidebar({
 
   const handleCustomSubmit = () => {
     if (!customPrompt.trim()) return;
-    onPromptClick(PromptType.CUSTOM, customPrompt);
+    onPromptClick(PromptType.CUSTOM, customPrompt, difficultyLevel);
     setShowCustomInput(false);
     setCustomPrompt("");
   };
@@ -199,7 +199,7 @@ export function PromptSidebar({
               {PROMPT_BUTTONS.map((btn) => (
                 <button
                   key={btn.type}
-                  onClick={() => onPromptClick(btn.type)}
+                  onClick={() => onPromptClick(btn.type, undefined, difficultyLevel)}
                   className={pillButtonStyle}
                 >
                   {btn.label}
@@ -218,7 +218,7 @@ export function PromptSidebar({
 
             {/* wikipedia button */}
             <button
-              onClick={() => onPromptClick(PromptType.WIKIPEDIA)}
+              onClick={() => onPromptClick(PromptType.WIKIPEDIA, undefined, difficultyLevel)}
               className="w-full px-2.5 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 border-2 border-gray-800 shadow-[0_3px_0_0_#1e3a5f] hover:shadow-[0_2px_0_0_#1e3a5f] hover:translate-y-[1px] active:shadow-none active:translate-y-[3px] transition-all duration-100 flex items-center justify-center gap-1.5"
             >
               <Globe size={12} />
