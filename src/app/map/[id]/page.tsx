@@ -449,11 +449,17 @@ export default function MapPage() {
             ? (n.data as any).content // eslint-disable-line @typescript-eslint/no-explicit-any
             : n.data.type === "term"
               ? (n.data as any).definition // eslint-disable-line @typescript-eslint/no-explicit-any
-              : null,
+              : n.data.type === "wikipedia"
+                ? (n.data as any).extract // eslint-disable-line @typescript-eslint/no-explicit-any
+                : n.data.type === "book"
+                  ? (n.data as any).description // eslint-disable-line @typescript-eslint/no-explicit-any
+                  : null,
         url:
           n.data.type === "wikipedia"
             ? (n.data as any).pageUrl // eslint-disable-line @typescript-eslint/no-explicit-any
-            : null,
+            : n.data.type === "book"
+              ? (n.data as any).coverUrl // eslint-disable-line @typescript-eslint/no-explicit-any
+              : null,
         x: n.position.x,
         y: n.position.y,
       }));
